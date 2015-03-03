@@ -25,7 +25,7 @@ class RawOptions(object):
 
     # Option parsing regular expressions
     OPT_LINE_RE = re.compile(r'''^
-                                 (?P<mod>!!|--|\+\+)?       # modifier
+                                 (?P<mod>!!|--|\+\+|<<|>>)? # modifier
                                  \s*
                                  (?P<plat>\S+)              # platform
                                  \s+
@@ -162,6 +162,13 @@ class Options(object):
                         + ' ' + self.options[option.key]
                 else:
                     self.options[option.key] = option.value
+            elif option.modifier == '>>':
+                # prepend, no space
+                if option.key in self.options:
+                    self.options[option.key] = option.value \
+                        + self.options[option.key]
+                else:
+                    self.options[option.key] = option.value
             elif option.modifier == '!!':
 
                 if option.key == 'BDE_COMPILER_FLAG':
@@ -170,6 +177,12 @@ class Options(object):
 
                 # override
                 self.options[option.key] = option.value
+            elif option.modifier == '<<':
+                # append, no space
+                if option.key in self.options and self.options[option.key]:
+                    self.options[option.key] += option.value
+                else:
+                    self.options[option.key] = option.value
             else:                         # option.modifier in ('', '++')
                 # append
                 if option.key in self.options and self.options[option.key]:
